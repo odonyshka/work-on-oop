@@ -5,30 +5,35 @@ class Student:
         self.gender = gender
         self.finished_courses = []
         self.courses_in_progress = []
-        self.grades = {}
+        self.grades = []
         self.average_grades = {}
 
-    def rate_hw(self, lecturer, course, grade):
-        if isinstance(lecturer, Lecturer) and course in self.courses_in_progress and course in lecturer.teaching_the_course:
-            if course in lecturer.grades:
-                lecturer.grades[course] += [grade]
-            else:
-                lecturer.grades[course] = [grade]
+    def rate_lecturer(self, lecturer, course_attached, grade):
+        if isinstance(lecturer, Lecturer) and course_attached in lecturer.teaching_the_course and course_attached in lecturer.grade_for_lecturer:
+            lecturer.grades[course_attached] += [grade]
         else:
-            return 'Ошибка'
-
-    def average(self, students, course, average_grades):
-        for student in students:
-            if isinstance(student, Student) and course in student.grades[course]:
-                average_grades.extend(student.grades[course])
-            return
+            lecturer.grades[course_attached] = [grade]
 
     def __str__(self):
-        return f" \nИмя: {self.name}" \
-               f" \nФамилия: {self.surname}" \
-               f" \nСредняя оценка за домашние задания: {self.grades}" \
-               f" \nКурсы в процессе изучения: {self.courses_in_progress}" \
-               f" \nЗавершенные курсы: {self.finished_courses}"
+        if len(self.grades) > 0:
+            avg_grades = sum(self.grades) / len(self.grades)
+        else:
+            avg_grades = "-"
+
+        in_progress = ""
+        for x in self.courses_in_progress:
+            in_progress += x + ", "
+
+        finished = ""
+        for x in self.finished_courses:
+            finished += x + ", "
+
+        some_student = f"Имя: {self.name}, \n"
+        some_student += f"Фамилия: {self.surname}, \n"
+        some_student += f"Средняя оценка за домашние задания: {avg_grades}, \n"
+        some_student += f"Курсы в процессе изучения: {in_progress} \n"
+        some_student += f"Завершенные курсы: {finished}"
+        return some_student
 
 
 class Mentor:
@@ -42,34 +47,35 @@ class Lecturer(Mentor):
     def __init__(self, name, surname):
         super().__init__(name, surname)
         self.teaching_the_course = []
-        self.grades = {}
+        self.grades = []
         self.sum_grades = {}
 
+    def __lt__(self, student):
+        lecturer = len(self.grades)
+        if lecturer == 0:
+            return "-"
+        else:
+            averageLecturer = sum(self.grades) / lecturer
+
+        studentCount = len(student.grades)
+        if studentCount == 0:
+            return "-"
+        else:
+            averageStudent = sum(student.grades) / studentCount
+
+        return averageLecturer < averageStudent
+
+    def addGrade(self, grade):
+        self.grades.append(grade)
+
     def __str__(self):
-        return f" \nИмя: {self.name}" \
-               f" \nФамилия: {self.surname}" \
-               f" \nСредняя оценка за лекции: {self.grades}"
+        count = len(self.grades)
+        if count == 0:
+            average = "-"
+        else:
+            average = sum(self.grades) / count
 
-    def __eq__(self, other):
-        return self.grades == other.grades
-
-    def __lt__(self, other):
-        return self.grades < other.grades
-
-    def __gt__(self, other):
-        return self.grades > other.grades
-
-    def __le__(self, other):
-        return self.grades <= other.grades
-
-    def __ge__(self, other):
-        return self.grades >= other.grades
-
-    def average_rating(self, lecturers, course, sum_grades):
-        for lecturer in lecturers:
-            if isinstance(lecturer, Lecturer) and course in lecturer.grades:
-                sum_grades.extend(lecturer.grades[course])
-                return
+        return f"Имя: {self.name} \nФамилия:  {self.surname} \nСредняя оценка за лекции: {average}"
 
 
 class Reviewer(Mentor):
@@ -105,15 +111,14 @@ some_student = Student('Ruoy', 'Eman', 'your_gender')
 some_student.grades = 9.9
 some_student.courses_in_progress = 'Python, Git'
 some_student.finished_courses = 'Введение в программирование'
-print(some_student)
 best_student = Student('Mary', 'Yizli', 'your_gender')
 best_student.grades = 10
 best_student.courses_in_progress = 'Python, Git'
 best_student.finished_courses = 'Введение в программирование'
-print(best_student)
 print(some_lecturer == some_student)
 print(some_lecturer < some_student)
 print(some_lecturer > some_student)
 print(some_lecturer <= some_student)
 print(some_lecturer >= some_student)
+
 
